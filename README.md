@@ -11,6 +11,9 @@ Technologies used:
  Contact me on Discord atilla4030 to get a version using Raydium SDK that can buy
  new tokens (live for less than 1 minute even)
 
+ ![screenshot for the swap page project](https://i.imgur.com/MfWeVzS.png "Screenshot")
+
+
 ## How to use
 
 Download the example [or clone the repo](https://github.com/mui/material-ui):
