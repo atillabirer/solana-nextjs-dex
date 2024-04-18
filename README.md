@@ -1,6 +1,15 @@
-# Material UI - Next.js App Router example in TypeScript
+# DEX in NextJS for Solana tokens using Material UI + Jupiter API
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped using [`create-next-app`](https://github.com/vercel/next.js/tree/HEAD/packages/create-next-app) with Material UI installed.
+Technologies used:
+
+- Material UI
+- react-wallet-adapter for Solana wallets
+ - Jupiter API for quotes and swap instructions
+ - NextJS
+ - @solana/web3.js
+
+ Contact me on Discord atilla4030 to get a version using Raydium SDK that can buy
+ new tokens (live for less than 1 minute even)
 
 ## How to use
 
