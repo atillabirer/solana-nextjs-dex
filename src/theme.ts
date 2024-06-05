@@ -1,40 +1,47 @@
-'use client';
-import { Roboto } from 'next/font/google';
-import { createTheme } from '@mui/material/styles';
-import { red } from '@mui/material/colors';
+"use client";
+import { Roboto } from "next/font/google";
+import { createTheme } from "@mui/material/styles";
+import { red } from "@mui/material/colors";
+import "@fontsource/inter";
+import "@fontsource/quantico";
 
 const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: "dark",
     background: {
-      default: "#C6CCD8",
-      paper: "#D8D2C6"
+      default: "#1A1B1F",
+      paper: "#1A1B1F",
     },
     primary: {
-      main: '#D8D2C6',
+      main: "#1A1B1F",
     },
     secondary: {
-      main: '#C6CCD8',
+      main: "#8AC9E4",
     },
     error: {
       main: red.A400,
     },
   },
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: "Inter",
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        scrollbarColor: "black",
+      },
+    },
     MuiAlert: {
       styleOverrides: {
         root: ({ ownerState }) => ({
-          ...(ownerState.severity === 'info' && {
-            backgroundColor: '#60a5fa',
+          ...(ownerState.severity === "info" && {
+            backgroundColor: "#60a5fa",
           }),
         }),
       },

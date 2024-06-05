@@ -12,6 +12,9 @@ import {
 import SolanaLogo from "./Solana-Logo.png";
 import React from "react";
 import { CoinlistItem } from "@/types/CoinList";
+import { DebouncedState } from "use-debounce";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import theme from "@/theme";
 
 // wrapper + input
 
@@ -21,105 +24,140 @@ interface SwapInputComponentProps {
   setValue: React.Dispatch<React.SetStateAction<string>>;
   setChangesSide: React.Dispatch<React.SetStateAction<"A" | "B">>;
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  inputToken: CoinlistItem,
+  inputToken: CoinlistItem;
   setInputToken: React.Dispatch<React.SetStateAction<CoinlistItem>>;
+  debounced?: DebouncedState<() => void>;
+  setQuoting: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function SwapInputComponent(props: SwapInputComponentProps) {
-  const { direction, value, setValue, setChangesSide, setModalOpen, inputToken, setInputToken } = props;
+  const {
+    direction,
+    value,
+    setValue,
+    setChangesSide,
+    setModalOpen,
+    inputToken,
+    setInputToken,
+    debounced,
+    setQuoting,
+  } = props;
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    var reg = /^-?\d*\.?\d*$/
+    console.log("handleinputhcange called");
+    console.log("direction:", direction);
+    if (direction == "up") {
+      console.log("called debounced");
+      debounced!();
+    }
+    var reg = /^-?\d*\.?\d*$/;
     if (reg.test(event.target.value)) {
       setValue(event.target.value);
     }
   };
- 
+
   return (
     <>
-      <Typography variant="button">
-        {direction === "up" ? "You're selling:" : "You're buying:"}
-      </Typography>
       <Grid
         container
-        border="outset"
-        sx={{ mb: 3, borderRadius: 5, backgroundColor: "#C6CCD8" }}
+        sx={{
+          mb: 3,
+          borderRadius: 1,
+          backgroundColor: "#FAFAFA",
+          borderColor: "rgba(138,201,228,0.2)",
+          borderWidth: 2,
+          borderStyle: "solid",
+          p: 2,
+        }}
       >
-        <Grid item xs={3}>
-          <Button
-            sx={{
-              backgroundColor: "#a5aab5",
-              borderRadius: 3,
-              borderTopRightRadius: 0,
-              borderBottomRightRadius: 0,
-              height: "100%"
-            }}
-            variant="contained"
-            color="secondary"
-            startIcon={<Avatar src={inputToken.logo} />}
-            fullWidth
-            onClick={() => {
-              if(setChangesSide) setChangesSide(direction === "up" ? "A" : "B");
-              setModalOpen(true);
-            }}
-          >
-           {inputToken.symbol}
-          </Button>
-        </Grid>
         <Grid
           item
-          xs={4}
+          xs={direction == "up" ? 6 : 9}
           sx={{
-            borderWidth: 1,
-            borderRadius: 4,
-            p: 1,
-            backgroundColor: "#C6CCD8",
+            borderWidth: 2,
+            borderRadius: 1,
+            backgroundColor: "#FAFAFA",
           }}
         >
           <TextField
-            variant="standard"
             value={String(value)}
-            disabled={direction === "down"}
+            variant="standard"
+            defaultValue="1"
+            label={direction === "up" ? "From:" : "To:"}
             type="text"
             size="medium"
             onChange={handleInputChange}
-            InputProps={{ disableUnderline: true }}
+            InputProps={{
+              disableUnderline: true,
+              style: {
+                fontSize: 18,
+                color: "gray",
+                opacity: 1,
+                WebkitTextFillColor: direction === "up" ? "black" : "gray",
+              },
+            }}
+            InputLabelProps={{
+              style: { color: "#8AC9E4", fontWeight: "bold" },
+            }}
             fullWidth
             sx={{
               margin: "auto",
-              backgroundColor: "#C6CCD8",
+              backgroundColor: "#FAFAFA",
               borderRadius: 10,
               borderStyle: "hidden",
-              
             }}
           />
-        </Grid>
-        {
-          direction === "up" && 
-          (
-            <>
-          <Grid
-          item
-          xs={3}
+          <Typography
+            variant="caption"
+            sx={{ fontSize: "14px", color: "#AFB4C0" }}
           >
-          <TextField
-             InputProps={{
-              inputProps: {
-                  style: { textAlign: "right" },
-              }
-          }}
-          sx={{
-      "& fieldset": { border: 'none',textAlign: 'center'},
-      
-    }} disabled value={inputToken.uiAmount}></TextField>
-          
-          </Grid>
-          <Grid item xs={2}>
-        <Button variant="contained" fullWidth sx={{height:"100%",borderRadius: 4,borderTopLeftRadius: 0,borderBottomLeftRadius: 0}} onClick={() => setValue(inputToken.uiAmount.toString())}>MAX</Button>
+            Balance: {inputToken.uiAmount}
+          </Typography>
+        </Grid>
+        <Grid item xs={direction === "up" ? 4 : 1}></Grid>
+        {true && (
+          <>
+            <Grid item xs={2}>
+              {direction === "up" && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  sx={{
+                    borderRadius: 1,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                    fontSize: 10,
+                    borderColor: "#8AC9E4",
+                    borderWidth: 2,
+                  }}
+                  onClick={() => {
+                    setValue(inputToken.uiAmount.toString());
+                    setQuoting(true);
+                  }}
+                >
+                  Max
+                </Button>
+              )}
+              <Button
+                sx={{
+                  borderRadius: 1,
+                }}
+                size="medium"
+                startIcon={<Avatar src={inputToken.logo} />}
+                fullWidth
+                onClick={() => {
+                  if (setChangesSide)
+                    setChangesSide(direction === "up" ? "A" : "B");
+                  setModalOpen(true);
+                }}
+              >
+                {inputToken.symbol}
+                <KeyboardArrowDownIcon />
+              </Button>
             </Grid>
-            </>
-          )
-        }
+          </>
+        )}
       </Grid>
     </>
   );

@@ -37,13 +37,14 @@ interface CoinSelectDialogProps {
   setCoinListLoading: React.Dispatch<React.SetStateAction<boolean>>;
   addNewInput: string;
   setAddNewInput: React.Dispatch<React.SetStateAction<string>>;
+  setQuoting: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CoinSelectDialog(props: CoinSelectDialogProps) {
   const {
     open,
     setModalOpen,
-    
+
     setInputToken,
     coinList,
     setCoinList,
@@ -51,40 +52,46 @@ export default function CoinSelectDialog(props: CoinSelectDialogProps) {
     setCoinListLoading,
     addNewInput,
     setAddNewInput,
+    setQuoting,
   } = props;
 
-  const connection = useMemo(() => new Connection("https://methodical-long-dust.solana-mainnet.quiknode.pro/870f16040a2c16cfd4b5217a6d6e0f28fc1a6438/"),[])
-  const {publicKey,connected} = useWallet();
-
-  
-
-  
+  const connection = useMemo(
+    () =>
+      new Connection(
+        "https://methodical-long-dust.solana-mainnet.quiknode.pro/870f16040a2c16cfd4b5217a6d6e0f28fc1a6438/"
+      ),
+    []
+  );
+  const { publicKey, connected } = useWallet();
 
   React.useEffect(() => {
     async function userTokenFFI() {
-
       console.log("userTokenFFI called");
-      if(publicKey) {
-
+      if (publicKey) {
         setCoinListLoading(true);
-        const GTAresponse = await getTokenAccounts(publicKey?.toBase58(),connection);
-        console.log("GTAResponse:",GTAresponse);
+        const GTAresponse = await getTokenAccounts(
+          publicKey?.toBase58(),
+          connection
+        );
+        console.log("GTAResponse:", GTAresponse);
 
         // loop over coinList, if coinList already has GTAResponse coin, update balance and uiAmount in coinList item
         // if GTAResponse does not exist in coinList, add the coinList item
         // update coinList state accordingly
-        if(GTAresponse) {
-
-        setCoinList((prev) => {
-          const filteredList =  prev.filter((item) => !GTAresponse.find((value) => (value.mint.toBase58() === item.mint.toBase58())))
-          //find sol and load it up
-          return [...GTAresponse,...filteredList];
-
-        })
-        
+        if (GTAresponse) {
+          setCoinList((prev) => {
+            const filteredList = prev.filter(
+              (item) =>
+                !GTAresponse.find(
+                  (value) => value.mint.toBase58() === item.mint.toBase58()
+                )
+            );
+            //find sol and load it up
+            return [...GTAresponse, ...filteredList];
+          });
         }
         setCoinListLoading(false);
-
+        setQuoting(true);
 
         // GTAresponse.filter((item: any) => {
         //   //find the tokens that are already in the list
@@ -101,25 +108,17 @@ export default function CoinSelectDialog(props: CoinSelectDialogProps) {
         //     },...prev]);
         //   }
         // });
-
-
-
-        
       } else {
         console.log("no public key");
       }
-
-
     }
-    if(connected) {
-    userTokenFFI();
+    if (connected) {
+      userTokenFFI();
     }
-  },[connected]);
-
+  }, [connected]);
 
   async function addNewCoinToListMaybe(mint: string) {
     //get metaplex data of mint
-    
 
     const metaplex = new Metaplex(connection);
     const nft = await metaplex
@@ -136,11 +135,12 @@ export default function CoinSelectDialog(props: CoinSelectDialogProps) {
           mint: nft.mint.address,
           decimals: nft.mint.decimals,
           uiAmount: 0,
-          symbol: nft.json.symbol
+          symbol: nft.json.symbol,
         };
-        console.log("newcoinlist:",[...coinList, newCoin]);
-        setCoinList([newCoin,...coinList]);
+        console.log("newcoinlist:", [...coinList, newCoin]);
+        setCoinList([newCoin, ...coinList]);
         setCoinListLoading(false);
+        setQuoting(true);
         //setInputToken(newCoin);
         //setModalOpen(false);
       }
@@ -149,7 +149,7 @@ export default function CoinSelectDialog(props: CoinSelectDialogProps) {
 
   return (
     <Dialog open={open} fullWidth>
-      <DialogActions>
+      <DialogActions sx={{ bgcolor: "rgba(27, 38, 45, 1)" }}>
         <IconButton
           onClick={() => {
             setModalOpen(false);
@@ -159,67 +159,66 @@ export default function CoinSelectDialog(props: CoinSelectDialogProps) {
         </IconButton>
       </DialogActions>
 
-      <DialogContent>
-      <Typography>Insert Mint Address:</Typography>
+      <DialogContent sx={{ bgcolor: "rgba(27, 38, 45, 1)" }}>
+        <Typography sx={{ color: "rgba(255, 255, 255, 0.87)" }}>
+          Insert Mint Address:
+        </Typography>
         <Grid container>
           <Grid item xs={9}>
-          
-        <TextField
-          fullWidth
-          variant="outlined"
-          color="secondary"
-          onChange={(e) => setAddNewInput(e.target.value)}
-        />
+            <TextField
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              onChange={(e) => setAddNewInput(e.target.value)}
+            />
           </Grid>
           <Grid item xs={3}>
             <Button
               fullWidth
-              variant="outlined"
-              color="success"
-              sx={{height:"100%"}}
+              variant="contained"
+              color="secondary"
+              sx={{ height: "100%" }}
               onClick={() => addNewCoinToListMaybe(addNewInput)}
             >
               Add Token
             </Button>
           </Grid>
         </Grid>
-        {
-          coinListLoading? (
-            <List sx={{height:"50vh"}}>
-              <ListItem>
+        {coinListLoading ? (
+          <List sx={{ height: "50vh", bgcolor: "rgba(27, 38, 45, 1)" }}>
+            <ListItem>
+              <ListItemAvatar>
+                <Avatar src="" alt="solana"></Avatar>
+              </ListItemAvatar>
+              <ListItemButton>
+                <ListItemText primary="Loading..." />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        ) : (
+          <List sx={{ width: "100%", bgcolor: "rgba(27, 38, 45, 1)" }}>
+            {coinList.map((coin) => (
+              <ListItem key={coin.mint.toBase58()}>
                 <ListItemAvatar>
-                  <Avatar  src="" alt="solana">
-                   
-                  </Avatar>
+                  <Avatar src={coin.logo} alt={coin.name} />
                 </ListItemAvatar>
-                <ListItemButton>
-                  <ListItemText primary="Loading..." />
+                <ListItemButton
+                  onClick={() => {
+                    setInputToken(coin);
+                    setModalOpen(false);
+                    setQuoting(true);
+                  }}
+                >
+                  <ListItemText primary={coin.name} />
                 </ListItemButton>
+                <ListItemText
+                  primaryTypographyProps={{ textAlign: "right" }}
+                  primary={coin.uiAmount + " " + coin.symbol}
+                />
               </ListItem>
-            </List>
-          ) : (
-            <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-              {coinList.map((coin) => (
-                <ListItem key={coin.mint.toBase58()}>
-                  <ListItemAvatar>
-                    <Avatar src={coin.logo} alt={coin.name}/>
-                     
-                  </ListItemAvatar>
-                  <ListItemButton
-                    onClick={() => {
-                      setInputToken(coin);
-                      setModalOpen(false);
-                    }}
-                  >
-                    <ListItemText primary={coin.name} />
-                  </ListItemButton>
-                  <ListItemText primaryTypographyProps={{textAlign:"right"}} primary={coin.uiAmount + " " + coin.symbol} />
-                </ListItem>
-              ))}
-            </List>
-          )
-        }
- 
+            ))}
+          </List>
+        )}
       </DialogContent>
     </Dialog>
   );

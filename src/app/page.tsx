@@ -27,82 +27,96 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, clusterApiUrl } from "@solana/web3.js";
 import SwapComponentCard from "@/components/SwapComponentCard";
-import "./global.css"
+import "./global.css";
+import useRaydiumQuote from "@/hooks/useRaydiumQuote";
+import { privateConnection } from "@/util/privateRpc";
 
 export default function Home() {
-  const [inputAmount, setInputAmount] = React.useState("1000");
+  const [inputAmount, setInputAmount] = React.useState("1");
   const [outputAmount, setOutputAmount] = React.useState("0");
   const [coinList, setCoinList] = React.useState<CoinlistItem[]>(defaultList);
   const [tokenA, setTokenA] = React.useState<CoinlistItem>(coinList[0]);
-  const [tokenB, setTokenB] = React.useState<CoinlistItem>(coinList[1]);
+  const [tokenB, setTokenB] = React.useState<CoinlistItem>(coinList[2]);
   const [coinListLoading, setCoinListLoading] = React.useState<boolean>(false);
   const [addNewInput, setAddNewInput] = React.useState("");
-  
-
 
   React.useEffect(() => {
     console.log(
       `token A: ${tokenA.mint.toString()} token B: ${tokenB.mint.toString()}`
     );
   }, [tokenA.mint, tokenB.mint]);
+  React.useEffect(() => {
+    setTokenA(
+      coinList.find(
+        (item) =>
+          item.mint.toString() === "So11111111111111111111111111111111111111112"
+      )!
+    );
+  }, [coinList[0].balance]);
 
-  const calculatedOutputAmount = React.useMemo(() => {
-    async function calculatedAmountFFI() {
-
-      const amountLamports = Number(inputAmount) * (10 ** tokenA.decimals);
-      const quoteResponse = await (
-        await fetch(
-          `https://quote-api.jup.ag/v6/quote?inputMint=${tokenA.mint.toString()}&outputMint=${tokenB.mint.toString()}&amount=${amountLamports}&slippageBps=50`
-        )
-      ).json();
-      //set outputAmount as the UI version of the output amount from the jupiter API response
-      console.log(quoteResponse);
-      const outAmount = quoteResponse.outAmount;
-      const uiAmount = outAmount / (10 ** tokenB.decimals);
-      setOutputAmount(uiAmount.toString());
-    }
-    calculatedAmountFFI();
-
-  }, [inputAmount,tokenA.mint.toString(),tokenB.mint.toString()]);
+  // const calculatedOutputAmount = React.useMemo(() => {
+  //   async function calculatedAmountFFI() {
+  //     const amountLamports = Number(inputAmount) * 10 ** tokenA.decimals;
+  //     const quoteResponse = await (
+  //       await fetch(
+  //         `https://quote-api.jup.ag/v6/quote?inputMint=${tokenA.mint.toString()}&outputMint=${tokenB.mint.toString()}&amount=${amountLamports}&slippageBps=50`
+  //       )
+  //     ).json();
+  //     //set outputAmount as the UI version of the output amount from the jupiter API response
+  //     console.log(quoteResponse);
+  //     const outAmount = quoteResponse.outAmount;
+  //     const uiAmount = outAmount / 10 ** tokenB.decimals;
+  //   }
+  //   calculatedAmountFFI();
+  // }, [inputAmount, tokenA.mint.toString(), tokenB.mint.toString()]);
 
   const [modalOpen, setModalOpen] = React.useState(false);
   const [changesSide, setChangesSide] = React.useState<"A" | "B">("A");
+  const { wallet } = useWallet();
 
-
-
-
-  const network = WalletAdapterNetwork.Mainnet;
-  const wallets = React.useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-    [network]
-  );
-  
   const [swapping, setSwapping] = React.useState(false);
+  const quoteBag = useRaydiumQuote(
+    privateConnection,
+    wallet!,
+    tokenA,
+    tokenB,
+    inputAmount,
+    50
+  );
+  const { quote, quoting, setQuoting, poolKeys, setPoolKeys } = quoteBag;
 
+  React.useEffect(() => {
+    if (
+      window?.location.hostname === "localhost" ||
+      window?.location.hostname.endsWith("netlify.app")
+    ) {
+      //ok
+    } else {
+      throw Error("This is not localhost or netlify.app");
+    }
+  }, []);
 
   return (
     <>
-      <ConnectionProvider endpoint={clusterApiUrl(network)}>
-        <WalletProvider wallets={wallets} autoConnect={true}>
-          <WalletModalProvider>
-            <DappBar />
-            <Container maxWidth="sm">
-              <SwapComponentCard
-                direction="up"
-                setChangesSide={setChangesSide}
-                setModalOpen={setModalOpen}
-                inputToken={tokenA}
-                outputToken={tokenB}
-                setInputToken={setTokenB}
-                setOutputToken={setTokenA}
-                inputAmount={inputAmount}
-                setInputAmount={setInputAmount}
-                outputAmount={outputAmount}
-                setOutputAmount={setOutputAmount}
-                swapping={swapping}
-                setSwapping={setSwapping}
-              />
-              {/*  <Card sx={{ my: 5, borderRadius: 4, p: 5 }}>
+      <DappBar />
+      <Container maxWidth="sm">
+        <SwapComponentCard
+          quotebag={quoteBag}
+          direction="up"
+          setChangesSide={setChangesSide}
+          setModalOpen={setModalOpen}
+          inputToken={tokenA}
+          outputToken={tokenB}
+          setInputToken={setTokenB}
+          setOutputToken={setTokenA}
+          inputAmount={inputAmount}
+          setInputAmount={setInputAmount}
+          outputAmount={outputAmount}
+          setOutputAmount={setOutputAmount}
+          swapping={swapping}
+          setSwapping={setSwapping}
+        />
+        {/*  <Card sx={{ my: 5, borderRadius: 4, p: 5 }}>
           <SwapInputComponent
             direction="up"
             value={Number(inputAmount)}
@@ -135,22 +149,20 @@ export default function Home() {
             </Button>
           </Card>
   </Card> */}
-              <CoinSelectDialog
-                open={modalOpen}
-                setModalOpen={setModalOpen}
-                changesSide={changesSide}
-                setInputToken={changesSide == "A" ? setTokenA : setTokenB}
-                coinList={coinList}
-                setCoinList={setCoinList}
-                coinListLoading={coinListLoading}
-                setCoinListLoading={setCoinListLoading}
-                addNewInput={addNewInput}
-                setAddNewInput={setAddNewInput}
-              />
-            </Container>
-          </WalletModalProvider>
-        </WalletProvider>
-      </ConnectionProvider>
+        <CoinSelectDialog
+          setQuoting={quoteBag.setQuoting}
+          open={modalOpen}
+          setModalOpen={setModalOpen}
+          changesSide={changesSide}
+          setInputToken={changesSide == "A" ? setTokenA : setTokenB}
+          coinList={coinList}
+          setCoinList={setCoinList}
+          coinListLoading={coinListLoading}
+          setCoinListLoading={setCoinListLoading}
+          addNewInput={addNewInput}
+          setAddNewInput={setAddNewInput}
+        />
+      </Container>
     </>
   );
 }
