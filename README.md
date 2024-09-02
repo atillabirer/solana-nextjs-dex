@@ -8,7 +8,7 @@ Technologies used:
  - NextJS
  - @solana/web3.js
 
- Contact me on Discord atilla4030 to get a version using Raydium SDK that can buy
+ Contact me on Discord  to get a version using Raydium SDK that can buy
  new tokens (live for less than 1 minute even)
 
  ![screenshot for the swap page project](https://i.imgur.com/MfWeVzS.png "Screenshot")
