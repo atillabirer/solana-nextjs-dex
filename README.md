@@ -1,15 +1,16 @@
-# DEX in NextJS for Solana tokens using Material UI + Jupiter API
+# solana-nextjs-dex
+
+Ape into Solana memecoins without waiting for them to appear on Raydium or Jupiter frontends (which can take half an hour)
+Calls Raydium AMM contract directly to get token and pool info
 
 Technologies used:
 
 - Material UI
 - react-wallet-adapter for Solana wallets
- - Jupiter API for quotes and swap instructions
+ - Raydium SDK
  - NextJS
  - @solana/web3.js
 
- Contact me on Discord  to get a version using Raydium SDK that can buy
- new tokens (live for less than 1 minute even)
 
  ![screenshot for the swap page project](https://i.imgur.com/MfWeVzS.png "Screenshot")
 
