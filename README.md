@@ -3,6 +3,8 @@
 Ape into Solana memecoins without waiting for them to appear on Raydium or Jupiter frontends (which can take half an hour)
 Calls Raydium AMM contract directly to get token and pool info
 
+For dev support and freelance jobs add me on Discord: atilla4030 Telegram @atillaweb3
+
 Technologies used:
 
 - Material UI
